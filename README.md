@@ -24,9 +24,9 @@ creating an empty GitHub repository (replace the URL with your repository URL):
 ```powershell
 git init -b main
 git add .
-git commit -m "Add daily Canvas assignments pipeline"
+git commit-m "Add daily Canvas assignments pipeline"
 git remote add origin https://github.com/YOUR-USERNAME/canvas-assignments.git
-git push -u origin main
+git push -u origin main 
 ```
 
 ### 2. Create a Canvas API token
@@ -93,12 +93,39 @@ Do not save real tokens or the service account key in a committed `.env` file.
 
 Run the unit tests with `python -m unittest discover -s tests -v`.
 
+## Weekly email digest
+
+The separate `.github/workflows/weekly-email.yml` workflow runs on Mondays at
+15:00 UTC and can also be started manually from the Actions tab. It reads the
+latest rows from the `Assignments` tab in Google Sheets; it does not call the
+Canvas API. The digest includes assignments with a due date in the next seven
+days unless their `Status` is `Submitted`. It sends an email even when there
+are no matching assignments. Due times in the message are shown in UTC.
+
+The weekly workflow uses the existing `GOOGLE_SHEET_ID` and
+`GOOGLE_SERVICE_ACCOUNT_JSON` repository secrets to read the sheet. It also
+needs these email secrets:
+
+| Name | Value |
+| --- | --- |
+| `GMAIL_USERNAME` | The Gmail account used to send the digest |
+| `GMAIL_APP_PASSWORD` | An app password for that account (requires 2-Step Verification) |
+| `EMAIL_TO` | The address that should receive the digest |
+
+It does not need the Canvas token. If your sheet tab has a different name, set
+the repository variable `CANVAS_SHEET_TAB`; otherwise, the workflow uses
+`Assignments`. Check whether your school-managed Google account permits app
+passwords. GitHub scheduled workflows use UTC and can be delayed during busy
+periods.
+
 ## Security notes
 
 - Never put Canvas tokens or Google service-account keys in source code, issues,
   logs, or commits. If exposed, revoke and replace them.
+- Never put a Gmail app password in source code or logs; revoke and replace it
+  if exposed.
 - Grant the service account access only to this spreadsheet; do not share the
   key file itself.
 - The Canvas token inherits the permissions of your Canvas user account.
 - If you no longer want the pipeline, delete the repository secrets and revoke
-  the Canvas token and Google service-account key.
+  the Canvas token, Google service-account key, and Gmail app password.
