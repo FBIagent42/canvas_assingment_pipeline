@@ -99,7 +99,8 @@ The separate `.github/workflows/weekly-email.yml` workflow runs on Mondays at
 15:00 UTC and can also be started manually from the Actions tab. It reads the
 latest rows from the `Assignments` tab in Google Sheets; it does not call the
 Canvas API. The digest includes assignments with a due date in the next seven
-days unless their `Status` is `Submitted`. It sends an email even when there
+days unless their `Status` is `Submitted`. It groups assignments by course and
+sorts each course's assignments by due date. It sends an email even when there
 are no matching assignments. Due times in the message are shown in UTC.
 
 The weekly workflow uses the existing `GOOGLE_SHEET_ID` and

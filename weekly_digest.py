@@ -125,16 +125,29 @@ def build_email_body(
         lines.append("You have no unsubmitted assignments due in this window.")
         return "\n".join(lines)
 
+    assignments_by_course: dict[str, list[dict[str, str]]] = {}
     for assignment in assignments:
-        lines.extend(
-            [
-                f"{assignment.get('Course') or 'Unknown course'} — "
-                f"{assignment.get('Assignment') or 'Untitled assignment'}",
-                f"Due: {format_due_at(assignment['Due At'])}",
-                f"Canvas: {assignment.get('Canvas URL') or 'No assignment link provided'}",
-                "",
-            ]
+        course = assignment.get("Course") or "Unknown course"
+        assignments_by_course.setdefault(course, []).append(assignment)
+
+    for course in sorted(assignments_by_course, key=str.casefold):
+        lines.extend([course, "-" * len(course)])
+        course_assignments = sorted(
+            assignments_by_course[course],
+            key=lambda assignment: (
+                parse_due_at(assignment["Due At"]),
+                assignment.get("Assignment", "").casefold(),
+            ),
         )
+        for assignment in course_assignments:
+            lines.extend(
+                [
+                    f"Due: {format_due_at(assignment['Due At'])} — "
+                    f"{assignment.get('Assignment') or 'Untitled assignment'}",
+                    f"Canvas: {assignment.get('Canvas URL') or 'No assignment link provided'}",
+                    "",
+                ]
+            )
 
     return "\n".join(lines).rstrip()
 
